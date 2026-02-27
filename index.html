@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#0c0c12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="La Escena">
+  <title>La Escena</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       THEMES
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    [data-theme="dark"] {
+      --bg:          #0c0c12;
+      --bg2:         #111118;
+      --surface:     #16161f;
+      --surface2:    #1e1e2a;
+      --surface3:    #252535;
+      --border:      rgba(201,168,76,0.12);
+      --border2:     rgba(201,168,76,0.30);
+      --gold:        #c9a84c;
+      --gold2:       #e8c97a;
+      --gold3:       #a07830;
+      --accent:      rgba(201,168,76,0.07);
+      --text-head:   #f0e8d8;
+      --text-body:   #d8cfc0;
+      --text-muted:  #6a6080;
+      --text-poem:   #e0d6c4;
+      --card-bg:     #16161f;
+      --card-hover:  #1e1e2a;
+      --modal-bg:    rgba(10,10,16,0.97);
+      --shadow:      0 8px 40px rgba(0,0,0,0.6);
+      --shadow-card: 0 2px 12px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="light"] {
+      --bg:          #f7f3ec;
+      --bg2:         #f0ebe2;
+      --surface:     #faf7f2;
+      --surface2:    #f0ebe2;
+      --surface3:    #e8e2d8;
+      --border:      rgba(120,90,30,0.14);
+      --border2:     rgba(120,90,30,0.35);
+      --gold:        #8b6120;
+      --gold2:       #6b4810;
+      --gold3:       #a07830;
+      --accent:      rgba(160,120,48,0.07);
+      --text-head:   #1a1410;
+      --text-body:   #3a3020;
+      --text-muted:  #9a8870;
+      --text-poem:   #2a2418;
+      --card-bg:     #faf7f2;
+      --card-hover:  #f0ebe2;
+      --modal-bg:    rgba(247,243,236,0.98);
+      --shadow:      0 8px 40px rgba(0,0,0,0.12);
+      --shadow-card: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       BASE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --fs: 18px;
+      --font-display: 'Cinzel', serif;
+      --font-head:    'Playfair Display', serif;
+      --font-poem:    'Cormorant Garamond', serif;
+    }
+
+    html { font-size: var(--fs); scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--font-poem);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .4s ease, color .4s ease;
+    }
+
+    /* grain texture overlay — dark mode only */
+    [data-theme="dark"] body::after {
+      content:'';
+      position:fixed; inset:0; pointer-events:none; z-index:9998;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+      opacity: 1;
+    }
+
+    button { cursor:pointer; font-family:inherit; }
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--gold3); }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       SPLASH
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #splash {
+      position:fixed; inset:0; z-index:600;
+      background: var(--bg);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:0;
+      padding:2rem;
+      transition: opacity .65s ease, visibility .65s ease;
+    }
+    #splash.out { opacity:0; visibility:hidden; pointer-events:none; }
+
+    .sp-shimmer {
+      width:90px; height:1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-bottom:2.8rem;
+      animation: shimmer 2.8s ease infinite;
+    }
+    @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    .sp-initials {
+      font-family: var(--font-display);
+      font-size: clamp(5rem, 22vw, 8.5rem);
+      color: var(--gold);
+      letter-spacing:.28em;
+      line-height:1;
+      text-shadow:0 0 70px rgba(201,168,76,.2);
+      animation: fadeUp 1.3s ease both;
+    }
+    .sp-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 6.5vw, 2.6rem);
+      font-weight:400;
+      color: var(--text-head);
+      letter-spacing:.5em;
+      margin-top:.7rem;
+      animation: fadeUp 1.3s ease .25s both;
+    }
+    .sp-by {
+      font-family: var(--font-poem);
+      font-style:italic; font-weight:300; font-size:clamp(.8rem,2.5vw,.92rem);
+      color: var(--text-muted);
+      letter-spacing:.22em;
+      margin-top:.5rem;
+      animation: fadeUp 1.3s ease .45s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:none; }
+    }
+
+    .sp-rule {
+      display:flex; align-items:center; gap:.75rem;
+      margin:3rem 0;
+      animation: fadeUp 1.3s ease .65s both;
+    }
+    .sp-rule-line {
+      display:block; height:1px; width:55px;
+      background:linear-gradient(90deg,transparent,var(--gold3));
+    }
+    .sp-rule-line:last-child { background:linear-gradient(90deg,var(--gold3),transparent); }
+    .sp-rule-diamond { width:5px; height:5px; background:var(--gold3); transform:rotate(45deg); }
+
+    .sp-actions {
+      display:flex; flex-direction:column; align-items:center; gap:.7rem;
+      animation: fadeUp 1.3s ease .85s both;
+    }
+
+    #install-btn {
+      display:none;
+      font-family: var(--font-display);
+      font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
+      color:#0c0c12; background:linear-gradient(135deg,var(--gold2),var(--gold3));
+      border:none; padding:.95rem 2.2rem;
+      transition:transform .2s, box-shadow .2s;
+    }
+    #install-btn.show { display:block; }
+    #install-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.35); }
+
+    #enter-btn {
+      font-family: var(--font-display);
+      font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
+      color:var(--gold); background:transparent;
+      border:1px solid var(--border2); padding:.95rem 2.2rem;
+      transition:background .25s, transform .2s;
+    }
+    #enter-btn:hover { background:var(--accent); transform:translateY(-1px); }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       APP SHELL
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #app { display:none; min-height:100vh; }
+    #app.show { display:block; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position:sticky; top:0; z-index:200;
+      background:var(--bg);
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.9rem 1.5rem;
+      transition: background .4s;
+    }
+
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size:.72rem; letter-spacing:.38em; text-transform:uppercase;
+      color:var(--gold);
+    }
+
+    .topbar-controls {
+      display:flex; align-items:center; gap:.5rem;
+    }
+
+    /* theme toggle */
+    .theme-toggle {
+      width:44px; height:26px;
+      background:var(--surface2);
+      border:1px solid var(--border2);
+      border-radius:13px;
+      position:relative;
+      transition:background .3s, border-color .3s;
+      flex-shrink:0;
+    }
+    .theme-toggle::after {
+      content:'';
+      position:absolute; top:3px; left:3px;
+      width:18px; height:18px; border-radius:50%;
+      background:var(--gold);
+      transition:transform .3s ease;
+    }
+    [data-theme="light"] .theme-toggle::after { transform:translateX(18px); }
+
+    .theme-icon {
+      position:absolute; top:50%; transform:translateY(-50%);
+      font-size:.6rem; pointer-events:none; line-height:1;
+    }
+    .theme-icon-moon { left:5px; }
+    .theme-icon-sun  { right:4px; }
+    [data-theme="light"] .theme-icon-moon { opacity:.3; }
+    [data-theme="dark"]  .theme-icon-sun  { opacity:.3; }
+
+    /* font size btns */
+    .fs-btn {
+      width:32px; height:32px;
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text-muted);
+      font-family: var(--font-display);
+      font-size:.58rem; letter-spacing:.05em;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .2s;
+    }
+    .fs-btn:hover { border-color:var(--border2); color:var(--gold); }
+
+    /* ── HEADER ── */
+    .app-header {
+      text-align:center;
+      padding:4rem 2rem 2.5rem;
+    }
+    .ah-eyebrow {
+      display:block;
+      font-family: var(--font-poem);
+      font-style:italic; font-weight:300;
+      font-size:clamp(.72rem,2vw,.85rem);
+      letter-spacing:.25em; color:var(--text-muted);
+      margin-bottom:1.2rem;
+    }
+    .ah-title {
+      font-family: var(--font-display);
+      font-size:clamp(2.2rem, 10vw, 4.5rem);
+      font-weight:400; color:var(--text-head);
+      letter-spacing:.4em; line-height:1;
+      margin-bottom:.65rem;
+    }
+    .ah-sub {
+      font-family: var(--font-poem);
+      font-size:clamp(.8rem,2.5vw,.9rem);
+      font-style:italic; font-weight:300;
+      color:var(--text-muted); letter-spacing:.2em;
+      margin-bottom:2.2rem;
+    }
+    .ah-divider {
+      display:flex; align-items:center; justify-content:center; gap:.75rem;
+    }
+    .ah-divider-line {
+      height:1px; width:60px;
+      background:linear-gradient(90deg,transparent,var(--gold3));
+    }
+    .ah-divider-line:last-child { background:linear-gradient(90deg,var(--gold3),transparent); }
+    .ah-divider-mark {
+      width:7px; height:7px;
+      border:1px solid var(--gold3); transform:rotate(45deg);
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width:720px; margin:0 auto;
+      padding:1.5rem 1.25rem 6rem;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       ACCORDION SECTION
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .section-item {
+      margin-bottom:.75rem;
+      border:1px solid var(--border);
+      background:var(--surface);
+      transition:border-color .25s, background .4s;
+      overflow:hidden;
+    }
+    .section-item.open {
+      border-color:var(--border2);
+    }
+
+    /* Section header / toggle button */
+    .sec-toggle {
+      width:100%; background:transparent; border:none;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.25rem 1.4rem;
+      transition:background .2s;
+      text-align:left;
+    }
+    .sec-toggle:hover { background:var(--accent); }
+
+    .sec-toggle-left {
+      display:flex; align-items:center; gap:1rem;
+    }
+    .sec-num {
+      font-family: var(--font-display);
+      font-size:.52rem; letter-spacing:.2em;
+      color:var(--gold3); min-width:1.6rem;
+    }
+    .sec-name {
+      font-family: var(--font-display);
+      font-size:clamp(.72rem,2.8vw,1rem);
+      font-weight:400; color:var(--text-head);
+      letter-spacing:.25em; text-transform:uppercase;
+      transition:color .25s;
+    }
+    .section-item.open .sec-name { color:var(--gold); }
+
+    .sec-count {
+      font-family: var(--font-poem);
+      font-size:.72rem; font-style:italic;
+      color:var(--text-muted);
+      margin-left:.5rem;
+    }
+
+    .sec-chevron {
+      width:20px; height:20px; flex-shrink:0;
+      fill:none; stroke:var(--text-muted); stroke-width:1.5;
+      stroke-linecap:round; stroke-linejoin:round;
+      transition:transform .35s ease, stroke .25s;
+    }
+    .section-item.open .sec-chevron {
+      transform:rotate(180deg);
+      stroke:var(--gold);
+    }
+
+    /* Section body */
+    .sec-body {
+      max-height:0; overflow:hidden;
+      transition:max-height .45s cubic-bezier(0.4,0,0.2,1);
+    }
+    .section-item.open .sec-body {
+      max-height:3000px;
+    }
+
+    .sec-body-inner {
+      padding:.25rem .9rem 1.1rem;
+      border-top:1px solid var(--border);
+    }
+
+    /* ── POEM CARDS GRID ── */
+    .poem-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%,180px),1fr));
+      gap:.55rem;
+      padding:.75rem 0;
+    }
+
+    .poem-card {
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      padding:1.1rem 1rem .95rem;
+      text-align:left;
+      position:relative; overflow:hidden;
+      transition:border-color .2s, background .2s, transform .15s, box-shadow .2s;
+    }
+    .poem-card::before {
+      content:'';
+      position:absolute; top:0; left:0;
+      width:100%; height:2px;
+      background:linear-gradient(90deg,transparent,var(--gold3),transparent);
+      opacity:0; transition:opacity .25s;
+    }
+    .poem-card:hover {
+      border-color:var(--border2);
+      background:var(--card-hover);
+      transform:translateY(-2px);
+      box-shadow:var(--shadow-card);
+    }
+    .poem-card:hover::before { opacity:1; }
+
+    .pc-num {
+      display:block;
+      font-family:var(--font-display);
+      font-size:.48rem; letter-spacing:.22em;
+      color:var(--gold3); margin-bottom:.5rem;
+    }
+    .pc-title {
+      font-family:var(--font-head);
+      font-size:clamp(.78rem,2.5vw,.92rem);
+      font-weight:500; color:var(--text-body);
+      line-height:1.3;
+      transition:color .2s;
+    }
+    .poem-card:hover .pc-title { color:var(--text-head); }
+
+    .pc-arrow {
+      position:absolute; bottom:.75rem; right:.8rem;
+      width:14px; height:14px;
+      fill:none; stroke:var(--gold3); stroke-width:1.5;
+      stroke-linecap:round; stroke-linejoin:round;
+      opacity:0; transition:opacity .2s;
+    }
+    .poem-card:hover .pc-arrow { opacity:1; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       POEM MODAL
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #modal {
+      position:fixed; inset:0; z-index:500;
+      background:var(--modal-bg);
+      backdrop-filter:blur(8px);
+      display:flex; flex-direction:column;
+      opacity:0; visibility:hidden;
+      transition:opacity .3s ease, visibility .3s ease;
+    }
+    #modal.open { opacity:1; visibility:visible; }
+
+    .modal-topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.9rem 1.4rem;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+
+    .modal-breadcrumb {
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .modal-sec-name {
+      font-family:var(--font-display);
+      font-size:.52rem; letter-spacing:.22em; text-transform:uppercase;
+      color:var(--gold3);
+    }
+    .modal-breadcrumb-sep {
+      font-size:.6rem; color:var(--text-muted);
+    }
+    .modal-counter {
+      font-family:var(--font-display);
+      font-size:.5rem; letter-spacing:.15em;
+      color:var(--text-muted);
+    }
+
+    .modal-close {
+      width:36px; height:36px;
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text-muted);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.95rem; font-weight:300;
+      transition:all .2s;
+    }
+    .modal-close:hover { border-color:var(--border2); color:var(--gold); }
+
+    .modal-scroll {
+      flex:1; overflow-y:auto; overscroll-behavior:contain;
+      padding:3rem 1.5rem 4rem;
+    }
+
+    .modal-poem-wrap {
+      max-width:580px; margin:0 auto;
+    }
+
+    .modal-poem-title {
+      font-family:var(--font-head);
+      font-size:clamp(1.2rem,5vw,1.9rem);
+      font-weight:500; font-style:italic;
+      color:var(--gold);
+      text-align:center;
+      margin-bottom:.6rem;
+      letter-spacing:.04em;
+    }
+    .modal-title-rule {
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+      margin-bottom:3rem;
+    }
+    .mtr-line {
+      height:1px; width:32px;
+      background:linear-gradient(90deg,transparent,var(--gold3));
+    }
+    .mtr-line:last-child { background:linear-gradient(90deg,var(--gold3),transparent); }
+    .mtr-dot { width:3px; height:3px; background:var(--gold3); border-radius:50%; }
+
+    /* poem lines */
+    .poem-text {
+      font-family:var(--font-poem);
+      font-size:clamp(1.1rem, 3.5vw, 1.38rem);
+      font-weight:400; line-height:2;
+      color:var(--text-poem);
+    }
+    .poem-text p {
+      margin:0;
+      white-space:pre-wrap;
+      word-break:normal;
+      overflow-wrap:normal;
+    }
+    .poem-text .gap { height:1em; display:block; }
+
+    .modal-foot {
+      display:flex; justify-content:center;
+      margin-top:3rem;
+    }
+    .modal-foot-mark {
+      width:22px; height:1px;
+      background:var(--border2);
+    }
+
+    /* modal nav */
+    .modal-nav {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.85rem 1.4rem;
+      border-top:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .mnav-btn {
+      font-family:var(--font-display);
+      font-size:.55rem; letter-spacing:.2em; text-transform:uppercase;
+      color:var(--text-muted); background:transparent;
+      border:1px solid var(--border); padding:.55rem .95rem;
+      transition:all .2s;
+    }
+    .mnav-btn:hover { color:var(--gold); border-color:var(--border2); }
+    .mnav-btn:disabled { opacity:.22; pointer-events:none; }
+    .mnav-label {
+      font-family:var(--font-poem);
+      font-style:italic; font-size:.78rem;
+      color:var(--text-muted);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       RESPONSIVE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    @media (max-width:380px) {
+      .poem-text { font-size:1.05rem; }
+      .modal-scroll { padding:2rem 1.1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     SPLASH
+════════════════════════════════════ -->
+<div id="splash">
+  <div class="sp-shimmer"></div>
+  <div class="sp-initials">LE</div>
+  <div class="sp-title">La Escena</div>
+  <div class="sp-by">Hecho por Carlos López Pineda</div>
+  <div class="sp-rule">
+    <span class="sp-rule-line"></span>
+    <div class="sp-rule-diamond"></div>
+    <span class="sp-rule-line"></span>
+  </div>
+  <div class="sp-actions">
+    <button id="install-btn" onclick="installApp()">
+      <svg style="display:inline;width:11px;height:11px;vertical-align:middle;margin-right:7px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Instalar aplicación
+    </button>
+    <button id="enter-btn" onclick="enterApp()">Entrar</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     APP
+════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span class="topbar-brand">La Escena</span>
+    <div class="topbar-controls">
+      <button class="fs-btn" onclick="changeFs(-1)" title="Reducir texto">A−</button>
+      <button class="fs-btn" onclick="changeFs(1)" title="Aumentar texto">A+</button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+        <span class="theme-icon theme-icon-moon">☽</span>
+        <span class="theme-icon theme-icon-sun">☀</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <span class="ah-eyebrow">Poesías</span>
+    <h1 class="ah-title">La Escena</h1>
+    <p class="ah-sub">Hecho por Carlos López Pineda</p>
+    <div class="ah-divider">
+      <div class="ah-divider-line"></div>
+      <div class="ah-divider-mark"></div>
+      <div class="ah-divider-line"></div>
+    </div>
+  </header>
+
+  <!-- ACCORDION SECTIONS -->
+  <main class="content" id="accordion"></main>
+
+</div>
+
+<!-- ════════════════════════════════════
+     POEM MODAL
+════════════════════════════════════ -->
+<div id="modal" role="dialog" aria-modal="true" aria-label="Poema">
+  <div class="modal-topbar">
+    <div class="modal-breadcrumb">
+      <span class="modal-sec-name" id="m-sec"></span>
+      <span class="modal-breadcrumb-sep">›</span>
+      <span class="modal-counter" id="m-counter"></span>
+    </div>
+    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
+  </div>
+
+  <div class="modal-scroll" id="m-scroll">
+    <div class="modal-poem-wrap">
+      <h2 class="modal-poem-title" id="m-title"></h2>
+      <div class="modal-title-rule">
+        <div class="mtr-line"></div>
+        <div class="mtr-dot"></div>
+        <div class="mtr-line"></div>
+      </div>
+      <div class="poem-text" id="m-body"></div>
+      <div class="modal-foot"><div class="modal-foot-mark"></div></div>
+    </div>
+  </div>
+
+  <div class="modal-nav">
+    <button class="mnav-btn" id="btn-prev" onclick="stepPoem(-1)">&#8592; Anterior</button>
+    <span class="mnav-label" id="m-nav-title"></span>
+    <button class="mnav-btn" id="btn-next" onclick="stepPoem(1)">Siguiente &#8594;</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     DATA + LOGIC
+════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────
+   POEM DATA
+───────────────────────────────────── */
+const SECTIONS = [
+  {
+    id:'desamor', name:'Desamor',
+    poems:[
+      { title:'Mis Pecados', lines:['Nombre del pecado,','que cometí,','por no saber lo que era amar,','que yo también llegué a sufrir,','por no saber con quién quería estar.','','Retando siempre a mí personalidad,','para que vea mi maldad,','y sepa quién es el que manda más,','a la hora de la verdad.','','No tengo orgullo por el dolor,','que causo cuando estoy entre dos,','quedarme solo y ser mejor,','o destruir aún más tu corazón.','','Tenia miedo de no saber amar','de ser peor que ellos,','tomarmelo como un reto.','y no veas la tranquilidad','que yo te puedo dar.','','Miedo de que saliera mal,','que no veas mi capacidad,','de hacer feliz a los demás.','acabé como uno más,','destrozando poco a poco tu mundo lleno de paz','','crei que lo podría arreglar,','con disculpas sin verdad,','con gracias sin gracia,','con el corazón pendido en un viejo retal.','','Sentimiento retrógrado,','de poder ser alguien que ya no está,','un hilo perdido en un corazón,','que no sabe su ubicación ni donde quiere estar.','','Fuerte el tambor,','que avisa que algo está por pasar,','ese último escalón,','es el que falta para aprender por fin a amar.'] },
+      { title:'Buenos Tiempos', lines:['Como me olvido de esas noches,','cuando hablábamos siempre de los mejores','momentos que pasamos,','Hablando de esos ratos','donde todo era infinito,','todo era súper nítido','lo malo era crítico','todo muy bonito.','','no fue justo','tú olor ya lo dejaste,','en mi cama y en todas partes,','Eso no fue justo,','que no paro de pensarte,','ya no puedo concentrarme,','no fue como lo pintaste,','Esto no es solo un buen susto.','','Tentado de llamarte,','todavía guardo tu teléfono,','por si acaso ya te cansas,','de todo este jaleo.','','Calmando los pensamientos,','que me dicen que no soy bueno,','atentado por mis sentimientos.','','Perdido,','ya no vivo,','Ahora ya solo existo,','Pasando de mis sentidos,','Creo que son mis principios,','que no son los que yo rijo,','los que tú me adoctrinaste,','me dejó perdido.','','Trabajo conmigo','pasar página','siempre lo mismo,','me falta práctica,','odiarme se vuelve un rito,','mi alegría es errática,','','Todo va a acabar,','todo al fin se irá,','ahora todo nuestra historia','tendrá menos que contar.'] },
+      { title:'Sol y Luna', lines:['Últimamente he estado pensando,','porqué lo nuestro acabo de esa manera,','los dos sentíamos algo,','sin embargo no querías seguir como pareja.','','Ahora ya lo entiendo todo,','vivíamos en la boca del resto.','me besabas cuando estábamos solos,','y en público me dabas la mano con miedo.','','La gente es cobarde y amargada,','con miradas de odio por envidia,','los rumores falsos siempre se expandían,','y los insultos siempre por la espalda.','','A todos les quemaba nuestra felicidad,','nuestros besos les ardía por dentro,','hablaban de nuestra relación con maldad,','pero en el fondo se morían de celos.','','Ahora ya se porqué te perdí,','entiendo que no quieras volver a ese infierno.','Tampoco te preocupes por mí,','yo ya lo superé hace tiempo.'] },
+      { title:'Heridas al Fuego', lines:['Era amor verdadero,','o al menos eso pensaba,','todos mis recuerdos ahora son prisioneros,','prisioneros que se escapan por las mañanas.','','Las noches son una pesadilla,','los días rutinarios y vacíos.','Pensar en tu cariño son memorias aferradas,','aferradas en un corazón que pide auxilio.','','Y no te deseo ningún mal,','maldigo al destino por habernos conocido,','a mí por pensar que aquello era real,','al de arriba por haberme corrompido.','','Quemo nuestras fotos en una hoguera,','viendo como nuestras sonrisas se desintegran.','Nuestros abrazos se convierten en cenizas,','y tus besos ahora me queman.','','No sé qué habré hecho mal,','ahora ya da igual.','Tú sigue con tu vida,','que yo no sé si podré seguir con la mía.'] },
+      { title:'Para Que No Te Olvides', lines:['Mi cama yace solitaria,','mi persona es su única compañía,','los sueños no me dejan dormir,','porque mis recuerdos ahora son pesadillas.','','Varias veces he intentado meditar,','lo único que me salva es el alcohol,','alguna vez me ha estado a punto de ahogar,','pero es lo único que me quita el dolor,','irónicamente es lo único que me da claridad,','lo único que me evade del terror.','','Mi luz se ha apagado,','veo difícil que se vuelva a activar,','lo único que me llenaba lo has matado,','está vez no creo que vaya a resucitar,','mi corazón poco a poco se va desangrando,','tus memorias no me dejan en paz,','mis pensamientos me están torturando.','y a ti no te parece importar.','','El mundo ahora solo es gris,','tu le has robado todo el color,','te merces a alguien que te haga sufrir,','alguien que te destroce el corazón.'] },
+      { title:'Veneno', lines:['Hace tiempo habría jurado que eras la indicada,','ahora siento que tú siempre fuistes la mala,','me engañaste con tus abrazos y tú cara envenenada,','cuando me dabas cariño en verdad no sentías nada.','','Pasa que yo si te quería,','cada hora, cada minuto, todos los días,','sin excepción en todo momento quería que fueras mía,','para siempre que fueras la luz que me guía,','que seas mi pilar en caso de caída,','sin pensar en mis problemas cuando estás en mi vida,','sin preocuparme del trabajo, de los estudios,','de la gente que me crítica,','solo de ti, de nosotros, de lo que feliz nos haría,','Pero antes te fuiste sin que pudiera hacer nada,','me dejaste con el corazón en la palma,','que no supe cómo hacer que volviera a mis entrañas,','por eso ya nunca volveré a amar a alguien que me ama.','','por siempre quería que fueras mi salvación,','los motivos para hacer una canción,','pero que cosas que solo te las dedico de desamor,','de la persona que causó mi perdición.','','Mis sueños ahora frustrados eran solo contigo,','sin nadie más, solo tu y yo en un paisaje bonito,','sin nadie que nos moleste ni rompa lo que vivimos,','por siempre jamás estar totalmente unidos,','que mi futuro idílico sea tu conmigo,','y mi pesadilla sea que pienses que nunca te he querido.','','La desesperación me carcome por dentro,','sin pensar si yo he sido el malo o el bueno,','eso se decidirá por quién ha acabado por los suelos.','y al menos yo te veo en lo más arriba del cielo,','rozando el espacio con tu veneno,','un veneno que me ha causado daños internos,','y buscarás a otro para matarlo poco a poco por dentro'] },
+      { title:'De Vuelta', lines:['Pasan las horas, los días los meses,','y mi mundo sigue del revés,','he intentado olvidarte tantas veces,','de maneras tan diferentes,','que ya en verdad no se que hacer.','','No puedo odiarte,','tampoco amarte,','me carcome pensarte,','y pensarte no es algo que me guste hacer.','','no quiero ser cobarde,','ni la mañana amargarte,','solo una explicación para saber que debo hacer','estoy en un punto que me parece extraño,','pensar en todo lo que nos vamos a perder,','solo cuando se crucen nuestros caminos mirarnos,','sin que podamos quedar para hablarlo,','y volver a sentir eso otra vez.','','Lo nuestro se queda en un cuaderno,','un cuaderno con demasiadas hojas para responder,','una explicación, un sueño pasajero,','es todo lo que necesito para poder renacer.','','No tienes motivos para molestarte','de motivos para interesarte,','de querer ser alguien','en mi vida por segunda vez','de volver conmigo aunque sea para perdonarme,','para disculparte,','que es justo lo que solías siempre hacer.','','por siempre quería que fueras mi salvación,','los motivos para hacer una canción,','pero que cosas que solo te las dedico de desamor,','de la persona que causó mi perdición,','y aquí estoy otra vez,','mendigando tus palabras para poder oír tu voz,','aunque tan solo sea una última vez,','sentir de tu parte un poco de atención','','Con solo un poco de conversación,','me salvarías de un destino peor,','peor que un mundo sin estar juntos los dos,','es no saber el motivo de esa situación.'] },
+      { title:'La Tortura', lines:['Para que no quieras volver ya tengo a mis sentimientos,','mis sentidos gritan que ya no soy el mismo,','mismo que quería ser alguien que no tiene de repuesto,','una respuesta es lo que necesito,','para que se calme mi corazón ardido,','que arde porque sabe que somos polos opuestos,','polos que no se juntan,','ni aunque forcemos un amor perdido.','','Si quiero puedo contar,','todos mis traumas con los dedos de una mano,','pero varias manos necesitaría para enumerar','los destrozos que has formado,','forma de herida que no se sabe si va a acabar cerrando,','y que tú solo acabas admirando,','Una obra de arte,','en un alma que ya se estaba arruinando,','ruinas de mucho antes de que tú ubieras llegado,','pero que fuiste tú la que las acabó recuperando,','solo para tirarlas desde un lugar incluso más alto.','','Que quieres ver? Que quieres ver?','un cuerpo que ya no sabe que hacer,','para que quieres volver? Para qué?','para volver a romperme otra vez.','','Si no has saciado todavía tu sed,','Ve a por otro para que le consumas también.','','Para que querer a alguien de verdad,','si luego al final todo acaba igual,','igualmente no sabes lo que es amar,','solo un vago recuerdo de lo que muchos te intentaron dar,','tú vas y no me paras de estrangular,','aun incluso cuando la relación acaba de terminar,','siento que nunca me vas a dejar en paz,','incluso en mis pesadillas te digo que pares ya.','','Necesito una guía,','por tu culpa mi mente no ha estado jamás tan perdida,','tu te disfrazabas de un mapa que encaminaba mi vida,','pero ahora no encuentro ni mi sonrisa.','','Mis ganas de vivir ahora agonizan,','y tú aunque lo supieras ni te preocuparías,','eres todo por lo que ahora tengo pesadillas,','y dan para rato porque nunca se despistan.'] },
+      { title:'Debo Cambiar', lines:['Por todo aquello que hicimos mal,','por todas esas noches que no supimos que decirnos,','y que luego no pudimos recuperar,','esas noches que amarnos no pudimos,','y por esos días que me decías que ya no podías más.','','No quiero llorar,','tampoco quiero que creas que no estoy mal,','no quiero que pienses que lo que fuimos no fue nada,','y que mis sentimientos hacia tí no eran de verdad.','','Te quería demasiado que bien no lo podía expresar,','y no pude con la presión de no podertelo demostrar.','','No quiero sonreír,','no quiero que pienses que estoy feliz,','no quiero que pienses que para mí todo es mejor así,','y que mi amor por ti era baladí.','','me gustabas tanto que no lo quería admitir,','y eso termino con tu amor hacia mí de raíz.','','Te prometo que ya no soy el que era antes,','me he esforzado en cambiar para mejor,','para que mi corazón no esté fraccionado en partes,','y que me quieran por lo que soy yo,','un ser con un alma palpable,','y ahora sin ira en su interior.','','Ya no quiero hacerte sufrir más,','nunca fue mi intención ser un despojo de la sociedad,','mi ser a cambiado para ser mejor que los demás,','mi mentalidad está ideada para desapercibido no pasar,','que mi cometido no sea volver a hacerte mal,','sino más bien para hacerte sanar.','','No quiero llorar,','tampoco quiero que creas que no estoy mal,','no quiero que pienses que lo que fuimos no fue nada,','y que mis sentimientos hacia tí no eran de verdad.','','Te quería demasiado que bien no lo podía expresar,','y no pude con la presión de no podertelo demostrar.','','No quiero sonreír,','no quiero que pienses que estoy feliz,','no quiero que pienses que para mí todo es mejor así,','y que mi amor por ti era baladí.','','me gustabas tanto que no lo quería admitir,','y eso termino con tu amor hacia mí de raíz.','','Te prometo que ya no soy el que era antes,','me he esforzado en cambiar para mejor,','para que mi corazón no esté fraccionado en partes,','y que me quieran por lo que soy yo,','un ser con un alma palpable,','y ahora sin ira en su interior.'] },
+      { title:'Mi Culpa', lines:['Hiciste de nuestra relación muy corta,','te dí amor como a ninguna otra.','','Dime qué he hecho mal,','me dejaste de amar,','y ninguna razón me quisiste dar.','','Parece que soy el único que sufre,','el único que esto si le incumbe,','todo esto por dentro me destruye,','por fuera se nota que también me influye,','que te demostré mi amor siempre que pude,','para luego recibir de ti ofensivos cruces.','','Estoy intentando no decirte nada,','porque se que luego me lamentaré en mi cama,','con tus palabras para que me deshagan,','sin yo poder darte una respuesta que valga,','me quedaré paralizado como cada vez que te enfadas.','Y me arrepentiré de no haber dicho lo que pensaba.','','Me tendrás aquí cuando quieras,','cuando quieras amor de mientras,','cuando quieras expresar lo que sientas.','Incluso si quieres tener conversaciones tensas,','quejarte de tus desamores y de lo que te molesta,','de tus dudas y cosas que te inquietan,','o de lo mucho que mis actitudes apestan.','','Es duro estar sin ti,','aún más si has dicho que es culpa mía,','por dentro hace ya tiempo que morí,','y todo fue por culpa de lo que sentía,','contigo nunca sentí la necesidad de mentir,','sin embargo a mí me miento todos los días.'] },
+      { title:'Te Traje Flores', lines:['Rosa moribunda,','que una vez fue regalo,','sus pétalos caen sobre un suelo encharcado.','','Ventanas abiertas al aire furioso,','azotan las cortinas entre gritos y sollozos.','','La puerta mira con deseo,','a unos ojos rebosantes de culpa y de lamento,','mientras palabras lanzadas en vano,','van a oídos de un corazón enamorado.','','Enamorado ahora con un corazón vacío, inerte,','que yace en sus manos persuadiéndole,','obligándole a creer que es imposible,','que nada de esto está pasando.','','Heridas ya sanadas vuelven a abrirse,','exponiendo el pasado,','y lo que está por pasar.','','Recuerdos pasajeros de una vida lúcida','se hayan ahora en una mente colapsada,','llena de impotencia y carente de claridad.','','Perdones vacíos y excusas estúpidas','disfrazan un corazón que ya no siente nada,','un corazón que una vez fue un obsequio,','y que ahora lo quiere de regreso.'] },
+      { title:'Contando Ovejas', lines:['Contando ovejas,','en las noches más oscuras,','con pensamientos todavía en rejas,','con dolor y memorias de tortura,','Porque no supe que decirte cuando te tenía cerca,','ahora me está haciendo perder la cordura.','','Lo único que a ti me recuerda es mi musa,','que me hace pensar en tí cada vez que escribo,','de una manera triste y pura,','supongo que es parte del proceso del olvido,','olvidarte y asimilar que no eras mía,','y de algún modo sentirme bien conmigo mismo.','','¿como olvidarme si son dedicadas a ti todas mis rimas?','si cuando intento odiarte en tus ojos solo me fijo,','y cuando los recuerdo,','siento que tú también me has querido.','','Fue tan brusca la manera en que te fuiste,','que no me dio tiempo ni a asimilarlo,','al principio pensé que no podía ser posible,','y al siguiente día dejé de sonreír tanto.','','Me humillé a mí mismo creyendo que podría arreglarlo,','con respuestas que sabía que eran inservibles,','quise alargar mi agonía con fracasos,','para que al final acabara de la peor manera posible.','','Te avergüenza nuestro pasado,','mientes y dices que nunca a ocurrido,','mientras que yo digo que tú siempre me has gustado,','tu dices que nunca nada por mi has sentido.','','Lo que me mata es que tú siempre me has negado,','pero te amaba tanto que no podía admitirlo,','y aunque todavía del todo no te he superado,','me he percatado de la mentira que he vivido.'] },
+      { title:'Carencias de Cordura', lines:['Ya me he cansado de esperarte,','dijiste que iba a ser un tiempo,','que nuestro amor se estaba volviendo inerte,','que necesitabas espacio para volver de nuevo.','','Iluso de mí intentado ser paciente,','estabas todo el tiempo en mi mente,','soñaba contigo siempre,','y aunque duele, sigo esperando a que regreses.','','Se que tú ya te has olvidado de mí,','como si nada hubiera pasado,','al fin y el cabo yo fui el único que sufrí,','el único que todavía no quiere aceptarlo.','','Todos los días miraba esa puerta,','esperando a que algún día volvieras.','Un día dejé de hacerlo,','supongo que entendí que no volvería a verte,','me costó mil noches mentalizarme de ello,','pero al final supe que no volvería a tenerte.','','No voy a mentirte,','todavía no lo he superado del todo,','como te he dicho todavía te sigo esperando,','y te esperaré hasta que me vuelva loco.'] }
+    ]
+  },
+  {
+    id:'amor', name:'Amor',
+    poems:[
+      { title:'Milagrosa', lines:['Lo que siento de hace un rato,','no es ni medio normal,','un deseo casi innato,','desde que te vi pasar,','un mundo inexplorado,','que necesito investigar,','en un barco sin pasado,','y sin problemas de verdad.','','Nunca lo he experimentado,','pero me da curiosidad,','Sentir estar a tu lado,','y afrontar mi oscuridad,','con ayuda de tus brazos,','rodeándome y parar,','de pensar en los malvados,','de una historia aún por contar.','','Para que nunca me hagan daño,','para poder vivir en paz,','para sentirme sentenciado,','a nunca más despertar,','Ahí nunca estoy cansado,','y no paro de pensar,','todo lo que lograremos,','sin necesidad de nadie más.','','Nunca nadie se ha sentado,','ni han preguntado como voy,','tu siempre te has molestado,','en saber que tal estoy.','','La vergüenza nunca ha estado,','incluso a día de hoy,','nunca me has incomodado,','y me has hecho ver quién soy.','','Yo ya no tengo miedo,','lo que pase pasará,','y si el destino así lo dicta,','no tendré que rechistar.'] },
+      { title:'Pacto', lines:['No se si se sentirá tan bonito como me hacen imaginar,','alguien a tu lado en tus mejores momentos,','o en los que careces de estabilidad.','Se debe de sentir como un deseo,','un deseo hecho realidad.','','El compromiso no es algo para todo el mundo,','sobre todo para la gente que no sabe comprometerse,','no saben lo que es amar a una persona,','ni hacer que una relación dure eternamente,','no se cómo pueden ceder su corazón tan fácilmente,','Nunca entenderé cómo hacen sufrir tanto a la gente.','','El amor es lo más bonito que hay en el universo,','no dejemos que los indecentes lo arruinen,','por su culpa muchos tienen miedo,','miedo de que el corazón se lo lastimen.','','Supongo que el temor es pasajero,','solo hay que esperar a que la confianza domine.','','Me gusta estar con la soledad,','no niego que alguna vez me incomoda,','juego con la idea de que por ahí hay alguien más,','que mi alma no siempre va a estar sola,','quizá algún día con alguien pueda estar,','de momento me tendré que conformar con mi persona.'] }
+    ]
+  },
+  {
+    id:'oscuridad', name:'Oscuridad',
+    poems:[
+      { title:'Una Opción', lines:['No se si podré resistirlo,','todo se derrumba poco a poco,','el imperio que he estado trabajando,','ahora ya solo quedan escombros.','','Ruinas que una vez fueron mi olimpo,','cada santuario conocido,','todos mis pilares destruidos,','es el desastre de mi difunto paraíso.','','Mis lágrimas no saben dónde caer,','la nada me abraza condescendiente,','ya no confío en mi mismo,','me daña mi presente.','','Ya lo debería de saber,','ser feliz nunca fue mi estilo,','mí alegría tiende a perderse,','gozoso nunca será mi destino.','','Duermo entre ruinas,','mirandolas cada vez que sueño,','sin embargo ahí no se ven destruidas,','se ven como lo que una vez fueron,','un mundo lleno de vida,','vida que fue verdadera,','verdad que ahora solo es de ensueño.','','No tengo a nadie para que me salve,','ni si quiera yo estoy conmigo,','no se porque creí que podría ser distinto,','al fin y al cabo siempre acabo destruido.'] },
+      { title:'Un Día Más', lines:['Angustia, cansancio,','cansado de subir escalones,','en escaleras de puas por peldaños.','','Piernas que ya no aguantan el dolor,','el miedo de seguir un camino de espanto.','','Lujos que no puede permitirse,','risas imposibles, inservibles,','Las cucharas ahora pesan,','pero flotan en platos interminables.','','Nudillos ahora son piedras,','piedras fuertes, pero no impasibles.','mira hacia arriba para ver la luz,','un paraíso imposible de llegar,','donde la mente goza de salud,','y la ansiedad se transforma en libertad.','','Un día como el de hoy,','una sonrisa se dibuja en su rostro,','con manos temblorosas agarra un boli,','y empieza a escribir con lágrimas en los ojos.','','Menciona a familiares y amigos,','con disculpas y agradecimientos,','diciendo que está sufriendo,','que no quiere seguir vivo.','','Cuelga la nota en la ventana,','mirando con deseo el abismo que le esperaba.','','No tiene miedo,','tiene esperanza,','esperanza de que cese el sufrimiento,','y que con ello llegue la calma.','','Ya ha acabado el día,','al fin ha conseguido la calma que buscaba,','la libertad que quería,','la tranquilidad que deseaba.'] },
+      { title:'Post Mortem', lines:['Unas horas después volví donde pasó,','volví donde todo empezó y acabó,','donde fue la última vez que sonreí,','donde mi alma por fin sanó.','','Primero fui a la sala de estar,','donde estaba mi hermano,','no paraba de llorar,','mientras sostenía una foto mía en su mano.','','En ella estaba feliz,','tenía una gran sonrisa en la cara.','Creo que fue la primera vez que no le vi sonreír,','la primera vez que vi su alegría apagada.','','Luego fui a la habitación de mi padre,','el estaba en su cama,','tenía los ojos rojos,','mirando a la nada.','','Parecía que le pesaban los hombros,','las uñas se le clavaban,','tenía los nudillos rotos,','las paredes sangraban.','','Nunca le vi tan vulnerable,','no sabía ni que podía estarlo,','siempre le ví como un alma inquebrantable,','un alma que ahora se estaba agrietando.','','Finalmente fui a mí habitación,','estaba igual que como la había dejado,','pero mi madre estaba sentada en el suelo,','con la nota que le había dejado.','','No dejaba de mirar ese texto,','tenía las manos temblando,','se le veía sorprendida,','no tenía razón para estarlo.','','Yo siempre se lo decía,','lo mal que lo estaba pasando,','era una fase decía,','mira la etapa hasta donde ha llegado.','','Me gusta estar aquí,','no tengo preocupaciones,','un mundo donde no puedo sufrir,','un mundo donde no existen los dolores.','','No me arrepiento de lo que he hecho,','me arrepiento de lo que el hecho ha causado,','porque dolores ya no tengo,','pero se los he traspasado a los que amo.'] },
+      { title:'Abismo', lines:['Se me pasaron tantas cosas por la cabeza,','no sabría decir cuál fue el mejor recuerdo,','quizás ese loco día con mis amigos de fiesta,','o esa tarde con mi familia en el pueblo.','','Solo fueron unos pocos segundos,','para mí fue una eternidad,','sin embargo no fue un momento oscuro,','ver el cielo nunca me había dado tanta paz.','','Hubo un silencio inmenso,','no había nadie más,','solo eramos yo y el viento,','también un sol que brillaba con intensidad.','','Desde ahí se podía ver aquel parque,','Al que iba siempre con mi familia.','Recorríamos sus sendas todas las tardes,','hablando con ella entre lloros y risas.','','No me dio tiempo a pensar en mucho más,','tampoco me importaba demasiado,','sabía que el sufrimiento iba a parar,','sin embargo no volvería a ver a los que amo.','','Eso me entristeció más de lo que había imaginado,','sin embargo ya no hay vuelta atrás,','tampoco me arrepiento de mis actos,','ojalá los míos sepan que por fin voy a descansar en paz,','y que sepan que siempre los he amado.'] },
+      { title:'¿Por qué?', lines:['Reverendo destino,','porqué siempre acabas conmigo?','me derrumbas cual muralla,','no sin antes que crea que estoy en el paraíso.','','Reverendo destino,','porqué fui el elegido para el infortunio?','tu eres el que dirige mi camino,','el que me hace sufrir sin aparente motivo,','siempre me haces acabar destruido,','y las falsas ilusiones siempre las recibo.','','Vivo en una senda de desastres,','de dolor y de torturas constantes,','deseos de algo que creía que iba a ser constante,','que al final me los quitas de la forma mas desgarrante,','Porque no me dejas ser jubiloso?','Ya ha acabado mi condena de desdichas,','Porque no puedo ser feliz como cualquier otro?','Voy solo en mi vida,','Tu eres el que me ha dejado solo,','Tendré que hacer esto a mí modo.','','Reverendo destino,','porqué fui el elegido para el infortunio?','me hiciste vivir cosas que nadie había vivido,','al fin y al cabo verme sufrir es tu vicio.','','Reverendo destino,','porque siempre acabas conmigo?','como piensas que ganaré en la vida,','si te tengo a tí de enemigo.'] }
+    ]
+  },
+  {
+    id:'luz', name:'Luz en la Tormenta',
+    poems:[
+      { title:'Tu Paz', lines:['No mires a la ventana,','cada vez tienes más ganas,','esa oja está vacía,','y ese boli mucha tinta,','No te vayas todavía,','Aún no termina la partida,','todavía no ves salida,','todo llegará,','no debes de tener prisa,','que si no quieres tu vida,','que ya nada te da risa,','que ahora todo te da igual.','','Pides clemencia,','obviamente sin respuesta,','Recuerda que no tienes el corazón de piedra.','','Retando a tu conciencia,','pidiendo todo y teniendo quejas,','todo lo malo se concentra,','en alguien que le quedan pocas fuerzas.','','Te crees parásito, sin propósito,','buscando un final trágico,','único objetivo lógico,','tú ambiente no es tóxico,','Pero siempre tienes pánico.','','Tratas de no verlo,','lo ignoras por completo,','no ves la luz que yo veo,','tampoco haces un esfuerzo,','para salvarte ni un intento.','','Ya van tres veces, que te está ocurriendo?','no es una fase, no, ya lo entiendo.','Parece que puedes seguir,','no ves que puedes ser feliz,','tiras la toalla pensando que es mejor así,','miras a todo el mundo pasando de ti,','claro que te afecta si ya te quieres rendir,','no te conviene engañarte tú procura no partir.'] },
+      { title:'Llora Llora', lines:['Has salido de tu casa,','no era lo que tu pensabas,','se ha roto tu arca,','de la fuerte lluvia de tu alma.','','vacía tu mirada,','viendo todo y viendo nada,','con un nudo en la garganta,','cansado del peso de tu espalda,','cuando no sabes donde estar.','','Aguanta,','ya queda poco para descansar,','te preocupas demasiado por encontrar tu lugar.','','Las sonrisas no son verdaderas,','ni lo serán jamás,','solo aguanta hasta que venga,','buena gente de verdad.','','Puentes de madera,','que no aguantan tu pesar,','necesitas demasiado para lo poco que das.','','No tienes porqué llorar,','solo queda un paso más,','pa que no te hagan sufrir,','y empieces a sanar.','','No tienes porqué verlo,','no debes dejar de soñar,','recuerda que lo negro,','se vera con claridad.','','Solo dale tiempo,','y lo descubrirás,','primero es la tormenta,','y luego el cielo se abrirá.','','Claro que no estás seguro,','si a penas puedes andar,','como vas a tener fuerzas,','para alumbrar la oscuridad.','','Regalabas tus palabras,','ahora no quieres hablar,','con las veces que rogaban,','que te callaras ya.','','Trabajas en tu mismo,','siendo cada vez mejor,','no aguantaste la presión de ser siempre el peor.','','Repertorio de chistes,','que contabas sin parar,','menos mal que nunca vistes,','que no te paraban de ignorar.','','Donde está tu alegría,','que rodeaba a los demás,','tú siempre querías que todos vieran tu bondad.','','Lloras en tu cama,','y no sabes porqué,','no hay sonrisa en tu cara,','y no sabes qué hacer.','','Juras que es tu culpa,','dices que no eres de interés.','no te valoras nunca,','te saboteas sin querer.'] }
+    ]
+  },
+  {
+    id:'superacion', name:'Superación y Ambición',
+    poems:[
+      { title:'El Amanecer', lines:['Todo está por llegar,','una vida de ensueño ya se puede sentir,','el destino al fin a reconstruido mi prosperidad.','','Después de todo mi luz empieza a vivir,','mi cometido en esta vida es dejar huella al pisar.','','Mi brillo está a punto de iluminar el mundo entero,','el miedo al éxito ya no me asusta,','es necesario para llegar a donde quiero,','porque se que llegaré sin ningún tipo de duda.','','Nacido para explotar el don que tengo,','vocación de elevarme con el hasta la luna.','','El cielo ya no se ve tan alejado,','quizá me mudé allí algún día,','de momento tendré que mantenerme centrado,','algunos en el suelo me pondrán minas,','y solo perderé si me quedo parado.','','Mientras siga en este plano,','siempre habrá motivos para celebrar algo,','y para cuando mi momento haya llegado,','me iré con el más grande de los legados.'] },
+      { title:'A Por Todo', lines:['Quise experimentar demasiado,','y luego no supe que quería hacer,','que me estaría pasando,','para pensar que no estaba sentenciado.','','No me rindo jamás,','todo eso al final,','se que lo podré recuperar,','y aunque la toalla iba a tirar,','un rayo de luz atravesó el ventanal,','me dio algo más que claridad,','me dejó un brillo natural,','un milagro más,','que este si lo quiero aprovechar,','que aunque no tenga motivos para luchar,','no quiero ver mi vida pasar,','en un sistema que no sabe valorar,','algo que saben que no es normal,','y no saben controlar,','a alguien que no se deja adoctrinar.','','No me voy a quedar aquí sentado,','donde todo solo es negro y blanco,','donde no hay por donde dejar rastro,','y donde no son fuertes mis pasos,','que me quedo aquí tirado,','Para un mundo que no he sido creado,','Por errores del pasado,','cambié lo que me tenía planeado,','el destino hizo milagros,','y yo los tenía que haber aprovechado,','no tirarlos y dejarlos,','en un rincón prohibido del pasado.','','Sentenciado a una vida de lujos,','donde todo es menos duro,','y predomina la felicidad,','donde el esfuerzo a dado frutos,','donde no existe lo oscuro,','y donde todo ofrece claridad.','','Todo eso,','lo tiré a un mar inmenso,','que me resulta difícil encontrar,','donde se ha perdido entre más restos,','que sigo sin poder recuperar.'] },
+      { title:'Chico Estrella', lines:['Rimas clave,','Fuerte trance','más que cualquier ola de otros mares,','Potentes pares,','de versos asonantes,','que dejan atrás a cualquier otro visitante.','','Subiendo una colina de infarto,','sin dormirme antes de haber llegado,','pasan pasos no pasados,','si no de un presente aún más claro,','pasado de mano a mano,','hasta que calló en mi mente y en mis brazos,','Camino consolidado,','con migas por trabajo,','no por sabotaje asegurado,','si no por objetivo ya marcado','','Con pasaje seguro,','fijo rumbo,','Sutil mi progreso,','pero fama al acecho,','cuenta con más ceros,','mundo de provecho,','ya hace tiempo que no miento,','se me permite ser verdadero,','las exageraciones no son vitales,','son factores sin mentiras de por medio.','','Colina de infarto,','Con aliento por trabajo,','no trabajo demasiado,','sin cobrar mucho también,','incluso así me divierto,','viviendo una vida que aprovecho,','y que nunca perderé.','','Dolores impregnados,','en mi vida de hace un rato,','me recuerdan al tramo,','de un futuro no marcado,','donde no había motivos','para seguir intendo,','un trabajo borrado,','de mi mente un lago,','por mi como si queda ahogado,','prescindo de un futuro asegurado,','para ser yo mismo sin tener cuidado,','los que nunca lo han probado,','querrán sentirse escuchados,','Pero no,','no va así,','no lo van a conseguir,','no todos pueden subsistir,','en un mundo selecto,','donde no existe la raíz,','la sangre que yo tengo,','tu no la puedes adquirir,','yo tengo lo que puedo,','porque me lo han dado a mí.'] },
+      { title:'Sin Cadenas', lines:['Me juego todo en esto,','una oportunidad para subir a la cima,','una decisión que podría costarme mucho esfuerzo,','un momento decisivo para el rumbo de mi vida,','sin saber si me saldrá rentable un mejor puesto,','o arriesgarme a qué se hagan ciertas mis rimas.','','Tengo habilidades suficientes para lograrlo,','para estar en la élite del buen vivir,','para que mi trabajo no sea trabajo,','si no una forma de cobrar y a la vez hacerme feliz,','de subsistir sin sentirme controlado.','','Por todo el tiempo gastado,','conseguiré llegar a donde quiero,','donde todas esas horas perdidas,','las volveré a encontrar en algo que es de provecho,','y la gente que me decía que apenado moriría,','apenados morirán ellos por no intentar su sueño.','','No escucharé nunca a la gente amargada,','que dice que jamás llegaré a nada,','que mientras yo busco oro,','ellos solo se conforman con la plata,','que cuando yo quiero ser el más poderoso,','ellos se conforman con un techo y una cama.','','Para toda esa gente que no quiere que gane,','siento deciros que no depende de vosotros,','ninguno vais a llegar a ser nadie,','y cuando triunfe haréis oídos sordos,','porque os frustrará que vuestra vida sea irrelevante,','y la mía no podáis imitarla de ningún modo,','por meteros en vidas ajenas no sois importantes,','solo sois gente insignificante con sueños rotos.'] },
+      { title:'Imperio', lines:['Fue en ese momento cuando lo vi todo claro,','inspiración divina de algo grande,','algo para lo que estaba destinado,','para que mis sueños fuesen reales;','mi vocación había despertado.','','Mi mente ya no estaba nublada,','en su lugar un destello deslumbrante,','como si de una gran estrella se tratara,','de esas que son solitarias,','pero en la noches son las que más destacan.','','Esa luz ahora es mi gran faro,','el que brilla en las noches más oscuras,','en los mares más alejados,','en las montañas con más altura,','en los más profundos barrancos.','','Mi destino en la vida ya está sentenciado:','estoy por construir un imperio,','el más grande que haya sido creado,','no puede acabar en un simple sueño,','un don así no puede ser desperdiciado.'] },
+      { title:'Olimpo (Paraíso)', lines:['Yo ya he ganado,','ya tengo todo lo que siempre he deseado.','','Sin necesidad de haber muerto,','me elevé hasta el olimpo,','incrementando mi autoestima y mi ego,','solo con alas que yo mismo he tejido.','','Con mis propias manos y mi fuerza,','subí al esperado paraíso,','sin ningún tipo de ayuda externa,','logré evitar un futuro perdido.','','Ahora ya la gente no habla tanto,','solo oigo un silencio de impotencia,','de los que se reían por lo que era en el pasado,','ahora cuando estoy con ellos bajan la cabeza.','','Esos mismos ahora quieren ser amigos,','dicen que todo fue un malentendido,','así intentando ocultar su hipocresía,','y con ello sus faltas de autoestima.','','Yo ya he ganado,','ahora estoy en el olimpo,','hoy me siento respetado,','para hablar ahora me piden permiso.','','Yo ya he ganado,','ahora estoy en el paraíso,','donde mi opinión no se pasa por alto,','y próspero es mi destino.'] }
+    ]
+  },
+  {
+    id:'critica', name:'Crítica Social',
+    poems:[
+      { title:'Espiral', lines:['Trabajando sin descanso,','y mañana otra vez lo mismo,','volver a la rutina como si fuera un vicio,','un vicio que yo nunca he pedido.','','Un sistema anclado a la corriente,','a la gente que asiente sin saber por qué,','a la gente ciega que sigue a los Indecentes,','mientras que estos últimos todo lo ven.','','Una sociedad que se cree que ha ganado en la vida,','pero en verdad ni han empezado la partida,','un juego que gana el que más metas consiga,','pero ellos por lo que sea no están ni en la lista,','una lista donde predominan los de buena familia,','y donde no hay hueco para los surrealistas.','','Como consiguen todo para los poderosos,','mientras ellos observan el imperio roto,','donde ellos son solo los coros,','de algo más grande que todos nosotros,','donde cada sueño loco,','lo utilizan para prometerlo en algún nodo,','de un esquema incierto y realista de algún modo.','','Gente que sueña con ser un marionetista,','En un mundo que no premia a los ambiciosos,','que se aprovechan de los deseos de la gente lista,','y luegos son ellos los que manejan todo.','','Surrealistas que no son absurdos por creer,','si no por la imposibilidad por culpa de los ricos,','que a los codiciosos no les dejan crecer,','y los atrapan en una espiral de conflictos,','conflictos entre ellos mismos por ser o no ser,','fracasar en sus sueños pero ser atrevido,','o seguir las reglas y estrepitosamente no perder.'] },
+      { title:'Nunca Es Suficiente', lines:['Paraíso clandestino,','nadie quiere descubrirlo,','orgullosos de estar en un recinto,','donde nadie ataca por escrito,','y si atacan tienen sitio,','para no ser maldecidos.','ocultarse en un oficio,','que no quieren ni ellos mismos.','','Practicante principiante,','que no quiere tener planes,','solo atraviesa fases,','siempre temporales,','miedo al desastre,','fija clase,','la de controlados por los grandes.','','Horizonte sin barrancos,','sin curvas y sin lagos,','sin laberintos intrincados,','caminos hilados,','como un mapa ya marcado,','no parece estar nublado,','si no un día soleado,','sin prisas ni altibajos,','te lo dan todo mascado,','tú solo no te salgas de este plano,','si no quieres acabar en un mejor estado.','','No existen rincones,','raramente soluciones,','para aguantar la avalancha de montones,','gente con una sola pose,','objetivo mediocre,','detras de la pantalla todos somos enormes,','todos clones,','mente uniforme,','en un nicho que no entiende de divisiones.','','Gente de traje,','bien vestida y con clase,','caras serias con blindaje,','no nos dejan ver,','ni sus bienes ni sus males,','ni el nombre de su sastre,','no son sentimentales,','no, no es su forma de ser.','','Contienda en el trabajo,','enemigos y aliados,','luchan para ganar,','un ascenso,','un mejor sueldo,','todos se odian en secreto,','atacan evadiendo el centro,','todo para un mejor puesto,','que no pueden comprobar.','','Como no,','el sistema ya ganó,','hace mucho calor,','para el agua no alcanzó,','un hielo entre pierna y pierna,','para eso soy precoz.','','Como no,','el sistema no ha perdido,','empieza a hacer frío,','y no da para la calefacción,','una manta con abrigo,','poco más y fuego con palillos,','hipotermia en el sillón.'] },
+      { title:'Rincón', lines:['Llegué del trabajo,','mi familia en un marco,','amigos al lado,','y el que está al mando,','mi cara hecha un cuadro,','en un rincón apartado','cosas del pasado.','','mucho listillo en este mundo,','mucho fantasma por segundo,','tontos se creen los mudos,','que hablan poco y hacen mucho.','','Todos fotogénicos,','luego miedo escénico,','perifericos,','se creen clérigos,','con objetivo bélico,','de sus derechos, pensamientos éticos','','Consejo de un genio,','adme caso y no serás un preso,','libertad a cambio de dinero no,','a cambio de más sometimiento,','dame un beso no,','mejor dame dinero,','otro compromiso no, ya no quiero,','suficiente con los que tengo.','','Rumores de la cima,','estudia y tendrás vida,','trabaja y para la alcancía,','lo que cobras, tu medicina,','todo alegría,','paz y amor es tu rutina,','que es eso de la envidia?','','Poco a poco vas llenando la despensa,','Ojos rojos,','con insomnio,','que hay en la nevera?','platos preparados,','latas de hace un año,','sin comida una semana entera,','trabajo insuficiente,','y así todo los meses,','y aún los que me quedan.','','Siempre en frente de los focos,','no por codicioso,','ni por ego peligroso,','siento sofoco,','tanto peso es un agobio,','equilibrio tembloroso,','debajo de todo no soy nadie más que otros.'] },
+      { title:'Fortuna y Fama', lines:['Ya sueños no tengo,','me dicen que son uno pérdida de tiempo,','que me acostumbre a la vida sin miedo,','con miedo a fracasar y quedarse sin dinero,','y ahora me preguntó, qué es la vida sin el riesgo?','','Una vida rutinaria, vacía,','sin goce ni gracia,','con motivos para desear que llegue el fin de semana,','que tú felicidad dependa de cuánto te pagan,','y que tú motivación solo sea traer dinero a casa.','','Un camino para pasar desapercibido,','mirando mientras tanto a las estrellas,','que en su momento se arriesgaron,','y ahora tienen un trabajo fijo,','su felicidad depende de seguir trabajando en su vicio,','y agradecen siempre haber podido elegir su oficio.','','Y es que yo podía haber sido uno de ellos,','triunfar y que mis palabras no se pasen por alto,','elegí una vida en la que estoy preso,','preso en una vida que para mí es de espanto,','sin lujos y con pocos ceros,','y con rabia de a ese destino no haber llegado.','','Ahora sueños ya no tengo,','todos mis deseos se han ido esfumando,','el dinero y el poder conservarme en el pasado,','inmortalizadme por la potencia de mis actos,','supongo que serán mis sueños frustrados.'] }
+    ]
+  }
+];
+
+/* ─────────────────────────────────────
+   FLAT POEM INDEX
+───────────────────────────────────── */
+const flatPoems = [];
+SECTIONS.forEach(sec => {
+  sec.poems.forEach((p, i) => {
+    flatPoems.push({ secId:sec.id, secName:sec.name, poemIdx:i, poem:p });
+  });
+});
+let curFlat = 0;
+
+/* ─────────────────────────────────────
+   BUILD ACCORDION
+───────────────────────────────────── */
+const accordion = document.getElementById('accordion');
+let openSecId = null;
+
+SECTIONS.forEach((sec, si) => {
+  const item = document.createElement('div');
+  item.className = 'section-item';
+  item.id = 'sec-' + sec.id;
+
+  // Build card grid HTML
+  let cardsHTML = '';
+  sec.poems.forEach((p, pi) => {
+    const fi = flatPoems.findIndex(fp => fp.secId === sec.id && fp.poemIdx === pi);
+    cardsHTML += `
+      <button class="poem-card" onclick="openPoem(${fi})" aria-label="Leer ${p.title}">
+        <span class="pc-num">0${pi+1}</span>
+        <span class="pc-title">${p.title}</span>
+        <svg class="pc-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>`;
+  });
+
+  item.innerHTML = `
+    <button class="sec-toggle" onclick="toggleSection('${sec.id}')" aria-expanded="false" aria-controls="body-${sec.id}">
+      <div class="sec-toggle-left">
+        <span class="sec-num">0${si+1}</span>
+        <span class="sec-name">${sec.name}</span>
+        <span class="sec-count">(${sec.poems.length} ${sec.poems.length === 1 ? 'poema' : 'poemas'})</span>
+      </div>
+      <svg class="sec-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="sec-body" id="body-${sec.id}" role="region">
+      <div class="sec-body-inner">
+        <div class="poem-grid">${cardsHTML}</div>
+      </div>
+    </div>`;
+
+  accordion.appendChild(item);
+});
+
+function toggleSection(id) {
+  const item   = document.getElementById('sec-' + id);
+  const toggle = item.querySelector('.sec-toggle');
+  const isOpen = item.classList.contains('open');
+
+  // Close any open section first
+  if (openSecId && openSecId !== id) {
+    const prev = document.getElementById('sec-' + openSecId);
+    if (prev) {
+      prev.classList.remove('open');
+      prev.querySelector('.sec-toggle').setAttribute('aria-expanded','false');
+    }
+  }
+
+  if (isOpen) {
+    item.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    openSecId = null;
+  } else {
+    item.classList.add('open');
+    toggle.setAttribute('aria-expanded','true');
+    openSecId = id;
+    // Smooth scroll to section
+    setTimeout(() => item.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+  }
+}
+
+/* ─────────────────────────────────────
+   MODAL
+───────────────────────────────────── */
+function openPoem(fi) {
+  curFlat = fi;
+  renderModal();
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('m-scroll').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderModal() {
+  const fp = flatPoems[curFlat];
+  document.getElementById('m-sec').textContent = fp.secName;
+  document.getElementById('m-counter').textContent = (curFlat+1) + ' de ' + flatPoems.length;
+  document.getElementById('m-title').textContent = fp.poem.title;
+
+  // Truncated title for nav label
+  const navTitle = fp.poem.title.length > 22 ? fp.poem.title.slice(0,22)+'…' : fp.poem.title;
+  document.getElementById('m-nav-title').textContent = navTitle;
+
+  // Build poem
+  const body = document.getElementById('m-body');
+  body.innerHTML = '';
+  fp.poem.lines.forEach(line => {
+    if (line === '') {
+      const gap = document.createElement('span');
+      gap.className = 'gap';
+      body.appendChild(gap);
+    } else {
+      const p = document.createElement('p');
+      p.textContent = line;
+      body.appendChild(p);
+    }
+  });
+
+  document.getElementById('btn-prev').disabled = curFlat === 0;
+  document.getElementById('btn-next').disabled = curFlat === flatPoems.length - 1;
+  document.getElementById('m-scroll').scrollTop = 0;
+}
+
+function stepPoem(dir) {
+  const next = curFlat + dir;
+  if (next < 0 || next >= flatPoems.length) return;
+  curFlat = next;
+  renderModal();
+}
+
+// Close on backdrop
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  const open = document.getElementById('modal').classList.contains('open');
+  if (e.key === 'Escape' && open) closeModal();
+  if (e.key === 'ArrowRight' && open) stepPoem(1);
+  if (e.key === 'ArrowLeft'  && open) stepPoem(-1);
+});
+
+/* ─────────────────────────────────────
+   THEME
+───────────────────────────────────── */
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('le-theme', next);
+}
+// Restore saved theme
+(function() {
+  const saved = localStorage.getItem('le-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+
+/* ─────────────────────────────────────
+   FONT SIZE
+───────────────────────────────────── */
+let fontSize = 18;
+function changeFs(d) {
+  fontSize = Math.max(14, Math.min(26, fontSize + d));
+  document.documentElement.style.setProperty('--fs', fontSize + 'px');
+}
+
+/* ─────────────────────────────────────
+   SPLASH / PWA
+───────────────────────────────────── */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').classList.add('show');
+});
+async function installApp() {
+  if (!deferredPrompt) { alert('Menú del navegador › Añadir a pantalla de inicio'); return; }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (outcome === 'accepted') document.getElementById('install-btn').classList.remove('show');
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').classList.remove('show');
+});
+function enterApp() {
+  document.getElementById('splash').classList.add('out');
+  document.getElementById('app').classList.add('show');
+  setTimeout(() => document.getElementById('splash').remove(), 700);
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
